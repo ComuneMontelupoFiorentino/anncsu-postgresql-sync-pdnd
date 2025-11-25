@@ -1,5 +1,3 @@
-# anncsu-postgresql-sync-pdnd
-Script di sincronizzazione (interoperabilità) dei dati tra il database PostgreSQL (DBMS del sistema informativo territoriale comunale) e la Banca Dati ANNCSU, tramite integrazione con la Piattaforma Digitale Nazionale Dati (PDND).
 # UTILITÀ PER IL CONFERIMENTO COORDINATE E AGGIORNAMENTO CIVICI SU DB ANNCSU
 
 La presente funzionalità è costituita da un insieme di script in linguaggio PHP in grado di gestire le operazioni di conferimento delle coordinate dei civici o l'aggiornamento dei civici stessi su DB ANNCSU. Lo script estrae da DB PostGIS un elenco di record corrispondenti ai civici che si vogliono aggiornare. Le operazioni svolte sono dettagliate in uno specifico file di log generato al termine del processo di conferimento.

@@ -6,7 +6,7 @@ La presente funzionalità è costituita da un insieme di script in linguaggio PH
 
 - server con `openssl` e PHP versione `8` o superiore
 - PHP deve essere compilato con le seguenti estensioni: `php-cli`, `php-curl`, `php-pgsql`, `openssl`
-- database 'Postgresql` con estensione `PostGIS` in cui sono salvati i dati dei civici
+- database `Postgresql` con estensione `PostGIS` in cui sono salvati i dati dei civici
 - Servizi richiesti attivi e configurati su piattaforma `Interoperabilità PagoPA`
 - Lo script è compatibile con la `versione 1` (v1) del servizio di conferimento coordinate e di aggiornamento civici.
 

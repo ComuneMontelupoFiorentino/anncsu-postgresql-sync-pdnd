@@ -1,0 +1,30 @@
+## ESEMPIO DI LOG PER CONFERIMENTO COORDINATE IN PRUZIONE
+2025-11-14 07:07:30    LOG      INIZIO PROCESSO DI CONFERIMENTO COORDINATE
+                                
+
+2025-11-14 07:07:30    LOG      ESTRAZIONE RECORD DA PROCESSARE. LANCIO QUERY SELECT ...
+                                
+
+2025-11-14 07:07:30    LOG      Process dei record da 1 a 1...
+2025-11-14 07:07:30    LOG      PROGRESSIVI IN AGGIORNAMENTO
+                                xxxxxxxxx
+2025-11-14 07:07:30    LOG      Recupero Voucher PDND
+2025-11-14 07:07:30    LOG      Conferimento in corso...
+                                
+
+                                QUERY DI UPDATE RECORD A DB: 
+                    UPDATE ....
+                                
+
+2025-11-14 07:07:32    LOG      STATISTICHE DI CONFERIMENTO
+                                
+
+2025-11-14 07:07:32    LOG      TOTALE PROGRESSIVI PROCESSATI:........1
+2025-11-14 07:07:32    LOG      TOTALE PROGRESSIVI NON CONFERITI:.....0
+                                
+2025-11-14 07:07:32    LOG      TOTALE PROGRESSIVI CONFERITI:.........1
+                                xxxxxxxx
+
+## ESEMPIO DI LOG PER AGGIORNAMENTO ACCESSI IN PRODUZIONE
+2025-12-02 13:35:44    LOG      SIMULAZIONE - INIZIO PROCESSO DI AGGIORNAMENTO ACCESSI
+2025-12-02 13:35:44    ERROR    Errore nella tabella XXXXX, controllare la definizione dei campi in configurazione. ERROR:  .....

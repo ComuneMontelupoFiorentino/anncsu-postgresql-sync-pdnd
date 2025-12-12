@@ -27,6 +27,9 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
         "schema",
         "tabella_accessi",
         "tabella_operazioni",
+        "id_tabella_accessi",
+        "id_tabella_operazioni",
+        "id_civico_operazioni",
         "progr_naz",
         "progr_tabella_operazioni",
         "progr_tabella_accessi",
@@ -48,7 +51,7 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
     protected $schema;
 
     /**
-     * Tabella su cui eseguire l'operazione di update del campo $send_bool_field
+     * Tabella accessi
      * @var string
      */
 
@@ -60,7 +63,25 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
     protected $tabella_operazioni;
 
     /**
-     * Campo della tabella accessoria contente il Progressivo nazionale dell'odonimo
+     * Nome del campo univoco incrementale della tabella degli accessi
+     * @var string
+     */
+    protected $id_tabella_accessi;
+
+    /**
+     * Nome del campo univoco incrementale della tabella delle operazioni
+     * @var string
+     */
+    protected $id_tabella_operazioni;
+
+    /**
+     * Nome della colonna presente sulla tabella tabella_operazioni che contiene il riferimento all'id (id_tabella_accessi) della tabella tabella_accessi
+     * @var string
+     */
+    protected $id_civico_operazioni;
+
+    /**
+     * Nome della colonna della tabella accessoria contente il Progressivo nazionale dell'odonimo
      * @var string
      */
     protected $progr_naz;
@@ -100,37 +121,37 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
     protected $sez_cens;
 
     /**
-     * Campo della vista contenente il valore x delle coordinate per il record corrispondente
+     * Nome del campo della vista contenente il valore x delle coordinate per il record corrispondente
      * @var string
      */
     protected $coord_x;
 
     /**
-     * Campo della vista contenente il valore y delle coordinate per il record corrispondente
+     * Nome del campo della vista contenente il valore y delle coordinate per il record corrispondente
      * @var string
      */
     protected $coord_y;
 
     /**
-     * Campo del record accesso che identifica il metodo di ottenimento delle cordinate del civico
+     * Nome del campo del record accesso che identifica il metodo di ottenimento delle cordinate del civico
      * @var string
      */
     protected $metodo;
 
     /**
-     * Campo del record accesso che identifica l'operazione da eseguire sul civico (solo per funzionalit� di aggiornamento)
+     * Nome del campo del record accesso che identifica l'operazione da eseguire sul civico (solo per funzionalità di aggiornamento)
      * @var string
      */
     protected $tipo_operazione;
 
     /**
-     * Nome della colonna booleana presente nella tabella tabella_operazioni che indica se il civico � allineato con DB ANNCSU 
+     * Nome della colonna booleana presente nella tabella tabella_operazioni che indica se il civico è allineato con DB ANNCSU 
      * @var string
      */
     protected $allineato_tabella_operazioni;
 
     /**
-     * Nome della colonna booleana presente nella tabella tabella_accessi che indica se il civico � allineato con DB ANNCSU 
+     * Nome della colonna booleana presente nella tabella tabella_accessi che indica se il civico è allineato con DB ANNCSU 
      * @var string
      */
     protected $allineato_tabella_accessi;
@@ -139,26 +160,26 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
 
     /**
      * Dimensione massima per ogni blocco di esecuzione
-     * Es: Se il limite � 500, i dati vengono conferiti in 3 blocchi, i primi due da 200 record ciascuno, l'ultimo da 100
+     * Es: Se il limite è 500, i dati vengono conferiti in 3 blocchi, i primi due da 200 record ciascuno, l'ultimo da 100
      * @var string
      */
     private $chunkSize = 500;
 
     /**
      * Inizializza il servizio di conferimento coordinate ed esegue i controlli necessari su configurazione, 
-     * chiave privata e connettivit� a DB
+     * chiave privata e connettività a DB
      * 
      * @param array         $config         Configurazione del client per il servizio richiesto
      * @param array         $options        Opzioni di lancio aggiuntive
      * @param string        $environment    Ambiente di lancio
      * @param ProcessLog    $logInstance    Istanza globale del processo di log
-     * @param boolean       $dryRun         Modalit� dry run attiva
+     * @param boolean       $dryRun         Modalità dry run attiva
      */
     public function __construct($config, $options, $environment, $logInstance, $dryRun) 
     {
         parent::__construct($config,$options, $environment,'aggiornamento', $dryRun);
 
-        // set delle propriet� della classe
+        // set delle proprietà della classe
         foreach ($this->config as $confKey => $confValue) {
             if(property_exists($this, $confKey)){
                 $this->$confKey = $confValue;
@@ -176,7 +197,7 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
         // controllo esistenza chiave privata
         $this->setPrivateKey();
 
-        // controllo connettivit� a db
+        // controllo connettività a db
         $this->checkPostgreServiceFile();
 
         $this->checkDbTables();
@@ -218,14 +239,14 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
                 // aggiornare il database spuntando la casella allineato su tabella dei jobs
                 foreach($deleteResults['success'] as $unique_id => $results){
                     $access=$results['access'];
-                    $rowsToUpdate[] = $access['id'];
+                    $rowsToUpdate[] = $access[$this->id_tabella_operazioni];
                 }
                 $valuesDeleted = implode(',',$rowsToUpdate);
                 if($valuesDeleted) {
                     $updateQuery = "
                         UPDATE $this->schema.$this->tabella_operazioni 
                         SET $this->allineato_tabella_operazioni = true 
-                        WHERE id IN ($valuesDeleted)";
+                        WHERE $this->id_tabella_operazioni IN ($valuesDeleted)";
 
                     $this->logInstance->printProcessLog("QUERY DI AGGIORNAMENTO RECORD A DB PER RECORD RIMOSSI DA ANNCSU: $updateQuery", false);
                     $conn = $this->getPgConnection();
@@ -261,8 +282,8 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
                 $rowsAccessiToUpdate = array();
                 foreach($updateResults['success'] as $unique_id => $results){
                     $access=$results['access'];
-                    $rowsOperazioniToUpdate[] = $access['id'];
-                    $rowsAccessiToUpdate[] = $access['id_civico'];
+                    $rowsOperazioniToUpdate[] = $access[$this->id_tabella_operazioni];
+                    $rowsAccessiToUpdate[] = $access[$this->id_civico_operazioni];
                 }
                 $valuesUpdated = implode(',',$rowsOperazioniToUpdate);
                 $valuesUpdatedAccessi = implode(',',$rowsAccessiToUpdate);
@@ -271,12 +292,12 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
                     $updateQueryOperazione = "
                         UPDATE $this->schema.$this->tabella_operazioni
                         SET $this->allineato_tabella_operazioni = true 
-                        WHERE id IN ($valuesUpdated);";
+                        WHERE $this->id_tabella_operazioni IN ($valuesUpdated);";
                     
                     $updateQueryTabella = "
                         UPDATE $this->schema.$this->tabella_accessi
                         SET $this->allineato_tabella_accessi = true 
-                        WHERE acc_id IN ($valuesUpdatedAccessi);";
+                        WHERE $this->id_tabella_accessi IN ($valuesUpdatedAccessi);";
     
                     $finalUpdatedQuery = $updateQueryOperazione.$updateQueryTabella;
                     $this->logInstance->printProcessLog("QUERY DI AGGIORNAMENTO RECORD A DB PER RECORD AGGIORNATI SU ANNCSU: $finalUpdatedQuery", false);
@@ -314,8 +335,8 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
                     $access=$results['access'];
                     $progr = $results['updateResponse']['dati'][0]['progr_civico'];
     
-                    $rowsOperazioniToUpdate[] = $access['id'];
-                    $rowsAccessiToUpdate[] = "(".$access['id_civico'].",".$progr.")";
+                    $rowsOperazioniToUpdate[] = $access[$this->id_tabella_operazioni];
+                    $rowsAccessiToUpdate[] = "(".$access[$this->id_civico_operazioni].",".$progr.")";
                 }
                 $valuesInserted = implode(',',$rowsOperazioniToUpdate);
                 $valuesInsertedAccessi = implode(',',$rowsAccessiToUpdate);
@@ -324,11 +345,11 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
                     $insertQueryOperazione = "
                         UPDATE $this->schema.$this->tabella_operazioni
                         SET $this->allineato_tabella_operazioni = true 
-                        WHERE id IN ($valuesInserted);";
+                        WHERE $this->id_tabella_operazioni IN ($valuesInserted);";
                     
                     $insertQueryTabella = "
                         UPDATE $this->schema.$this->tabella_accessi as t 
-                        SET $this->progr_tabella_accessi = v.progressivo_accesso, $this->allineato_tabella_accessi = true from (VALUES $valuesInsertedAccessi) as v(id,progressivo_accesso) WHERE v.id = t.acc_id;";
+                        SET $this->progr_tabella_accessi = v.progressivo_accesso, $this->allineato_tabella_accessi = true from (VALUES $valuesInsertedAccessi) as v(id,progressivo_accesso) WHERE v.id = t.$this->id_tabella_accessi;";
     
                     $finalUpdatedQuery = $insertQueryOperazione.$insertQueryTabella;
                     $this->logInstance->printProcessLog("QUERY DI AGGIORNAMENTO RECORD A DB PER RECORD INSERITI SU ANNCSU: $finalUpdatedQuery", false);
@@ -368,7 +389,7 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
         $this->logInstance->printProcessLog("TOTALE CIVICI ESTRATTI NON CANCELLATI:.....".count(array_keys($deleteResults['error'])));
         $this->logInstance->printProcessLog(ANNCSUUtilities::chunkProgrsForDisplay(array_keys($deleteResults['error'])), false);
         if($valuesDeleted && !$dbDeleted) {
-            $this->logInstance->printProcessLog("ATTENZIONE! I civici sono stati cancellati correttamente da ANNCSU ma non � stata aggiornata la tabella operazioni a DB");
+            $this->logInstance->printProcessLog("ATTENZIONE! I civici sono stati cancellati correttamente da ANNCSU ma non è stata aggiornata la tabella operazioni a DB");
         }
 
         $this->logInstance->newLine();
@@ -379,7 +400,7 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
         $this->logInstance->printProcessLog("TOTALE CIVICI ESTRATTI NON AGGIORNATI:.....".count(array_keys($updateResults['error'])));
         $this->logInstance->printProcessLog(ANNCSUUtilities::chunkProgrsForDisplay(array_keys($updateResults['error'])), false);
         if($valuesUpdated && !$dbUpdated) {
-            $this->logInstance->printProcessLog("ATTENZIONE! I civici sono stati aggiornati correttamente su ANNCSU ma non � stato correttamente aggiornato il DB");
+            $this->logInstance->printProcessLog("ATTENZIONE! I civici sono stati aggiornati correttamente su ANNCSU ma non è stato correttamente aggiornato il DB");
         }
 
         $this->logInstance->newLine();
@@ -390,7 +411,7 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
         $this->logInstance->printProcessLog("TOTALE CIVICI ESTRATTI NON INSERITI:.....".count(array_keys($insertResults['error'])));
         $this->logInstance->printProcessLog(ANNCSUUtilities::chunkProgrsForDisplay(array_keys($insertResults['error'])), false);
         if($valuesInserted && !$dbInserted) {
-            $this->logInstance->printProcessLog("ATTENZIONE! I civici sono stati inseriti correttamente su ANNCSU ma non � stato correttamente aggiornato il DB");
+            $this->logInstance->printProcessLog("ATTENZIONE! I civici sono stati inseriti correttamente su ANNCSU ma non è stato correttamente aggiornato il DB");
         }
 
         return;
@@ -409,7 +430,7 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
         foreach($accessObj as $progr => $result){
             if(!$result['success']){
                 $error = $result['error'];
-                $errorMessage[] = "PROGRESSIVO $progr $error";
+                $errorMessage[] = "ACCESSO ID $progr $error";
             }
         }
 
@@ -428,14 +449,14 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
             $access = $error['access'];
             $error = $error['error'];
 
-            $rows[] = "(".$access['id'].",'".pg_escape_string($conn,$error)."')";
+            $rows[] = "(".$access[$this->id_tabella_operazioni].",'".pg_escape_string($conn,$error)."')";
 
             $errorToinsert = implode(',',$rows);
             if($errorToinsert) {
                 $errorQuery = "
                     UPDATE $this->schema.$this->tabella_operazioni as t 
-                    SET error = v.error from (VALUES $errorToinsert) as v(id,error) WHERE v.id = t.id;";
-                echo $errorQuery.PHP_EOL;
+                    SET error = v.error from (VALUES $errorToinsert) as v(id,error) WHERE v.id = t.$this->id_tabella_operazioni;";
+
                 $recs = pg_query($conn,$errorQuery);
             }
         }
@@ -456,7 +477,7 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
             $endRecord = $chunkCount*$this->chunkSize+count($block);
             $this->logInstance->printProcessLog("Process dei record da $startRecord a $endRecord...");
             $this->logInstance->printProcessLog("ID ACCESSI IN AGGIORNAMENTO");
-            $this->logInstance->printProcessLog(ANNCSUUtilities::getItemsOnProcess($block,'id_civico'), false);
+            $this->logInstance->printProcessLog(ANNCSUUtilities::getItemsOnProcess($block, $this->id_civico_operazioni), false);
             $this->logInstance->printProcessLog("Recupero Voucher PDND");
 
             // recupero voucher PDND
@@ -470,7 +491,7 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
                     $voucher, 
                     'A',
                     [$this,'prepareUpdateAccessRequest'],
-                    'id_civico'
+                    $this->id_civico_operazioni
                 );
 
                 $accessObjects = $accessObjects + $accessObjectsPart;
@@ -593,17 +614,17 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
             case 'I':
                 $body = array(
                     "richiesta" => array(
-                        "codcom" => $this->codcom,
-                        "progr_nazionale" => $access[$this->progr_naz],
+                        "codcom" => strval($this->codcom),
+                        "progr_nazionale" => strval($access[$this->progr_naz]),
                         "accesso" => array(
-                            "sezione_censimento" => $access[$this->sez_cens],
+                            "sezione_censimento" => strval($access[$this->sez_cens]),
                             "operazione_civico" => 'I',
-                            "numero" => $access[$this->civico],
-                            "esponente" => $access[$this->esp],
+                            "numero" => strval($access[$this->civico]),
+                            "esponente" => strval($access[$this->esp]),
                             "coordinate" => array(
-                                "x" => $access[$this->coord_x],
-                                "y" => $access[$this->coord_y],
-                                "metodo" => $access[$this->metodo]
+                                "x" => strval($access[$this->coord_x]),
+                                "y" => strval($access[$this->coord_y]),
+                                "metodo" => strval($access[$this->metodo])
                             )
                         )
                     )
@@ -613,18 +634,18 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
             case 'R':
                 $body = array(
                     "richiesta" => array(
-                        "codcom" => $this->codcom,
-                        "progr_nazionale" => $access[$this->progr_naz],
+                        "codcom" => strval($this->codcom),
+                        "progr_nazionale" => strval($access[$this->progr_naz]),
                         "accesso" => array(
-                            "progr_civico" => $access[$this->progr_tabella_operazioni],
-                            "sezione_censimento" => $access[$this->sez_cens],
+                            "progr_civico" => strval($access[$this->progr_tabella_operazioni]),
+                            "sezione_censimento" => strval($access[$this->sez_cens]),
                             "operazione_civico" => 'R',
-                            "numero" => $access[$this->civico],
-                            "esponente" => $access[$this->esp],
+                            "numero" => strval($access[$this->civico]),
+                            "esponente" => strval($access[$this->esp]),
                             "coordinate" => array(
-                                "x" => $access[$this->coord_x],
-                                "y" => $access[$this->coord_y],
-                                "metodo" => $access[$this->metodo]
+                                "x" => strval($access[$this->coord_x]),
+                                "y" => strval($access[$this->coord_y]),
+                                "metodo" => strval($access[$this->metodo])
                             )
                         )
                     )
@@ -633,10 +654,10 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
             case 'S':
                 $body = array(
                     "richiesta" => array(
-                        "codcom" => $this->codcom,
-                        "progr_nazionale" => $access[$this->progr_naz],
+                        "codcom" => strval($this->codcom),
+                        "progr_nazionale" => strval($access[$this->progr_naz]),
                         "accesso" => array(
-                            "progr_civico" => $access[$this->progr_tabella_operazioni],
+                            "progr_civico" => strval($access[$this->progr_tabella_operazioni]),
                             "operazione_civico" => 'S',
                         )
                     )
@@ -670,7 +691,7 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
     {
         $conn = $this->getPgConnection();
         // seleziona campi da tabella accessi
-        $tableQuery = "SELECT $this->allineato_tabella_accessi, $this->progr_tabella_accessi FROM $this->schema.$this->tabella_accessi LIMIT 1";
+        $tableQuery = "SELECT $this->id_tabella_accessi,$this->allineato_tabella_accessi, $this->progr_tabella_accessi FROM $this->schema.$this->tabella_accessi LIMIT 1";
 
         $testTableResults = pg_query($conn, $tableQuery);
         if(!$testTableResults || pg_num_rows($testTableResults) == -1){
@@ -679,7 +700,7 @@ class ANNCSUAggiornamento extends ANNCSUGenericService {
         }
 
         // seleziona campi da vista accessi
-        $viewQuery = "SELECT $this->progr_naz, $this->progr_tabella_operazioni, $this->civico, $this->esp, $this->sez_cens, $this->coord_x, $this->coord_y, $this->metodo, $this->tipo_operazione, $this->allineato_tabella_operazioni, error FROM $this->schema.$this->tabella_operazioni LIMIT 1";
+        $viewQuery = "SELECT $this->id_tabella_operazioni,$this->progr_naz, $this->progr_tabella_operazioni, $this->civico, $this->esp, $this->sez_cens, $this->coord_x, $this->coord_y, $this->metodo, $this->tipo_operazione, $this->allineato_tabella_operazioni, error FROM $this->schema.$this->tabella_operazioni LIMIT 1";
 
         $testViewResults = pg_query($conn, $viewQuery);
         if(!$testViewResults || pg_num_rows($testViewResults) == -1){

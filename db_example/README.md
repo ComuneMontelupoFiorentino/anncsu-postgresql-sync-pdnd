@@ -30,14 +30,14 @@ Per utilizzare questi script è necessario installare:
 
 ```bash
 |── db_example/
-    |── schemas.sql
-    |── extensions.sql
-    |── table_odonimi.sql
-    |── table_civici.sql
-    |── table_operations_list.sql
-    |── table_operations.sql
-    |── functions_triggers.sql
-    |── views.sql
+    |── 01_schemas.sql
+    |── 02_extensions.sql
+    |── 03_table_odonimi.sql
+    |── 04_table_civici.sql
+    |── 05_table_operations_list.sql
+    |── 06_table_operations.sql
+    |── 07_views.sql
+    |── 08_functions_triggers.sql
     |── README.md
 
 ```

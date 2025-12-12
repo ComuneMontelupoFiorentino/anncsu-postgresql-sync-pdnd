@@ -26,6 +26,8 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
         "schema",
         "tabella_accessi",
         "vista_accessi",
+        "id_tabella_accessi",
+        "id_vista_accessi",
         "allineato_tabella_accessi",
         "progr_vista_accessi",
         "coord_x",
@@ -52,31 +54,43 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
     protected $vista_accessi;
 
     /**
-     * Campo della vista che determina se le coordinate sono già state conferite per il record corrispondente
+     * Nome del campo univoco incrementale della tabella degli accessi
+     * @var string
+     */
+    protected $id_tabella_accessi;
+
+    /**
+     * Nome del campo univoco della vista accessi
+     * @var string
+     */
+    protected $id_vista_accessi;
+
+    /**
+     * Nome del campo della vista che determina se le coordinate sono già state conferite per il record corrispondente
      * @var string
      */
     protected $allineato_tabella_accessi;
 
     /**
-     * Campo della vista contenente il progressivo accesso per il record corrispondente
+     * Nome del campo della vista contenente il progressivo accesso per il record corrispondente
      * @var string
      */
     protected $progr_vista_accessi;
 
     /**
-     * Campo della vista contenente il valore x delle coordinate per il record corrispondente
+     * Nome del campo della vista contenente il valore x delle coordinate per il record corrispondente
      * @var string
      */
     protected $coord_x;
 
     /**
-     * Campo della vista contenente il valore y delle coordinate per il record corrispondente
+     * Nome del campo della vista contenente il valore y delle coordinate per il record corrispondente
      * @var string
      */
     protected $coord_y;
 
     /**
-     * Campo del record accesso che identifica il metodo di ottenimento delle cordinate del civico
+     * Nome del campo del record accesso che identifica il metodo di ottenimento delle cordinate del civico
      * @var string
      */
     protected $metodo; 
@@ -85,14 +99,14 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
      * Limite di chiamate massimo per ogni esecuzione
      * @var string
      */
-    private $limit = 2000;
+    private $limit = 0;
 
     /**
      * Dimensione massima per ogni blocco di esecuzione
      * Es: Se il limite è 500, i dati vengono conferiti in 3 blocchi, i primi due da 200 record ciascuno, l'ultimo da 100
      * @var string
      */
-    private $chunkSize = 500;
+    private $chunkSize = 1;
 
     /**
      * Inizializza il servizio di conferimento coordinate ed esegue i controlli necessari su configurazione, 
@@ -130,6 +144,7 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
         // controllo connettività a db
         $this->checkPostgreServiceFile();
 
+        // controllo esistenza campi tabelle
         $this->checkDbTables();
         
         $this->logInstance->newLine();
@@ -148,7 +163,7 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
         $conn = $this->getPgConnection();
 
         // preparazione query
-        $query = $this->prepareAccessQuery($conn, true);
+        $query = $this->prepareAccessQuery();
         $this->logInstance->newLine();
         $this->logInstance->printProcessLog("ESTRAZIONE RECORD DA PROCESSARE. LANCIO QUERY $query");
 
@@ -233,8 +248,8 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
         // aggiornamento a DB per i record conferiti con successo
         $insertValues = array();
         foreach($successProgrs as $progr => $results){
-            $access=$results['access'];
-            $insertValues[] = $access['id'];
+            $access = $results['access'];
+            $insertValues[] = $access[$this->id_vista_accessi];
         }
         $values = implode(',',$insertValues);
 
@@ -242,7 +257,7 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
             $updateQuery = "
                     UPDATE $this->schema.$this->tabella_accessi  
                     SET $this->allineato_tabella_accessi = true 
-                    WHERE id IN ($values)";
+                    WHERE $this->id_tabella_accessi IN ($values)";
             
                     $this->logInstance->printProcessLog("QUERY DI UPDATE RECORD A DB: $updateQuery", false);
 
@@ -260,7 +275,7 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
             }
         }
 
-        //scrittura log di output
+        // scrittura log di output
         $this->logInstance->newLine();
         
         $this->logInstance->printProcessLog("STATISTICHE DI CONFERIMENTO");
@@ -330,24 +345,15 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
     }
 
     /**
-     * Restituisce la query per l'ottenimento della lista civici da DB, se l'opzione raw è attiva 
-     * restituisce la query semplice, diversamente restituisce un prepared_statement
+     * Restituisce la query per l'ottenimento della lista civici da DB
      * 
-     * @param PGConn    $conn oggetto con le informazioni del singolo accesso, proveniente da DB
-     * @param boolean   $raw  se restituire la query semplice o il prepared statement, default = false
-     * 
-     * @return mixed  
+     * @return string
      */
-    private function prepareAccessQuery($conn, $raw = false)
+    private function prepareAccessQuery()
     {
-        if($raw){
-            return "SELECT * FROM $this->schema.$this->vista_accessi WHERE id NOT IN (SELECT id FROM $this->schema.$this->tabella_accessi WHERE $this->allineato_tabella_accessi = TRUE) AND $this->coord_x IS NOT NULL and $this->coord_y IS NOT NULL order by $this->progr_vista_accessi ASC LIMIT $this->limit";
-        }
-        else {
-            $prepared = pg_prepare($conn, 'access_select_query', "SELECT * FROM $this->schema.$this->vista_accessi WHERE id NOT IN (SELECT id FROM $this->schema.$this->tabella_accessi WHERE $this->allineato_tabella_accessi = TRUE) AND $this->coord_x IS NOT NULL and $this->coord_y IS NOT NULL order by $this->progr_vista_accessi ASC LIMIT $this->limit");
-            
-            return $prepared;
-        }
+
+        return "SELECT * FROM $this->schema.$this->vista_accessi WHERE $this->id_vista_accessi NOT IN (SELECT $this->id_tabella_accessi FROM $this->schema.$this->tabella_accessi WHERE $this->allineato_tabella_accessi = TRUE) AND $this->coord_x IS NOT NULL and $this->coord_y IS NOT NULL order by $this->progr_vista_accessi ASC LIMIT $this->limit";
+
     }
 
     /**
@@ -359,7 +365,7 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
     {
         $conn = $this->getPgConnection();
         // seleziona campi da tabella accessi
-        $tableQuery = "SELECT $this->allineato_tabella_accessi FROM $this->schema.$this->tabella_accessi LIMIT 1";
+        $tableQuery = "SELECT $this->id_tabella_accessi,$this->allineato_tabella_accessi FROM $this->schema.$this->tabella_accessi LIMIT 1";
 
         $testTableResults = pg_query($conn, $tableQuery);
         if(!$testTableResults || pg_num_rows($testTableResults) == -1){
@@ -368,7 +374,7 @@ class ANNCSUCoordinates extends ANNCSUGenericService {
         }
         
         // seleziona campi da vista accessi
-        $viewQuery = "SELECT $this->progr_vista_accessi, $this->coord_x, $this->coord_y, $this->metodo FROM $this->schema.$this->vista_accessi LIMIT 1";
+        $viewQuery = "SELECT $this->id_vista_accessi,$this->progr_vista_accessi, $this->coord_x, $this->coord_y, $this->metodo FROM $this->schema.$this->vista_accessi LIMIT 1";
 
         $testViewResults = pg_query($conn, $viewQuery);
         if(!$testViewResults || pg_num_rows($testViewResults) == -1){

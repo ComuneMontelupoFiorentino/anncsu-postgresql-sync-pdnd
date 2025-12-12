@@ -35,6 +35,7 @@ Per utilizzare questi script è necessario installare:
     |── table_odonimi.sql
     |── table_civici.sql
     |── table_operations_list.sql
+    |── table_operations.sql
     |── functions_triggers.sql
     |── views.sql
     |── README.md

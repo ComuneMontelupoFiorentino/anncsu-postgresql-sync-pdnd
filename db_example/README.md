@@ -66,11 +66,11 @@ Per utilizzare questi script è necessario installare:
 
 ## Installazione
 
-    > NOTA
-    >
-    > Gli script non contengono **CREATE DATABASE**, per permettere flessibilità negli ambienti di sviluppo.
-    > Dovrà preliminarmente essere creato il database.
-    > Esempio **CREATE DATABASE toponomastica**`.
+> NOTA
+>
+> Gli script non contengono **CREATE DATABASE**, per permettere flessibilità negli ambienti di sviluppo.
+> Dovrà preliminarmente essere creato il database.
+> Esempio **CREATE DATABASE toponomastica**`.
 
 Esegui gli script contenuti nei file **.sql** nelle sequenza indicata (01->08)
 

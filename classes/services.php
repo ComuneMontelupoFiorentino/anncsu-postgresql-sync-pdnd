@@ -24,7 +24,7 @@ class ANNCSUGenericService {
     protected $environment;
 
     /**
-     * Modalit� simulazione attiva
+     * Modalità simulazione attiva
      * @var boolean 
      */
     protected $dryRun;
@@ -78,30 +78,30 @@ class ANNCSUGenericService {
     protected $aud;
 
     /**
-     * identificativo chiave pubblica, si recupera da piattaforma PagoPA-Interoperabilit�
+     * identificativo chiave pubblica, si recupera da piattaforma PagoPA-Interoperabilità
      * @var string 
      */
     protected $key_id;
 
     /**
-     *  identificativo univoco del soggetto che inoltra la richiesta, si recupera da piattaforma PagoPA-Interoperabilit�
+     *  identificativo univoco del soggetto che inoltra la richiesta, si recupera da piattaforma PagoPA-Interoperabilità
      * @var string
      */
     protected $iss;
 
     /**
-     * parametro univoco del soggetto che inoltra la richiesta, si recupera da piattaforma PagoPA-Interoperabilit�
+     * parametro univoco del soggetto che inoltra la richiesta, si recupera da piattaforma PagoPA-Interoperabilità
      * @var string
      */
     protected $sub;
 
     /**
-     * @var string identificativo univoco della finalit�, si recupera da piattaforma PagoPA-Interoperabilit�
+     * @var string identificativo univoco della finalità, si recupera da piattaforma PagoPA-Interoperabilità
      */
     protected $purpose_id;
 
     /**
-     * identificativo univoco del client, spesso coincide con issuer, si recupera da piattaforma PagoPA-Interoperabilit�
+     * identificativo univoco del client, spesso coincide con issuer, si recupera da piattaforma PagoPA-Interoperabilità
      * @var string 
      */
     protected $client_id;
@@ -167,7 +167,7 @@ class ANNCSUGenericService {
      * @param array     $options        Opzioni di lancio aggiuntive
      * @param string    $environment    Ambiente di lancio
      * @param string    $serviceType    Tipo di servizio richiesto
-     * @param boolean   $dryRun         Modalit� dry run attiva
+     * @param boolean   $dryRun         Modalità dry run attiva
      */
     public function __construct($config, $options, $environment, $serviceType, $dryRun)
     {
@@ -182,9 +182,9 @@ class ANNCSUGenericService {
     }
 
     /**
-     * Controlla la validit� della configurazione per il servizio richiesto. In caso di invalidit� interrompe l'esecuzione
+     * Controlla la validità della configurazione per il servizio richiesto. In caso di invalidità interrompe l'esecuzione
      *
-     * @param array     $mandatoryKeys  Array con le chiavi delle propriet� richieste per il servizio specificato
+     * @param array     $mandatoryKeys  Array con le chiavi delle proprietà richieste per il servizio specificato
      * 
      * @return void 
      * @throws Exception
@@ -225,7 +225,7 @@ class ANNCSUGenericService {
 
     /**
      * Controlla l'esistenza del file  pg_service.conf nella cartella della configurazione e
-     * l'esistenza del servizio per la funzionalit� di esecuzione richiesta.
+     * l'esistenza del servizio per la funzionalità di esecuzione richiesta.
      * In caso di successo imposta la variabile d'ambiente con il percorso del file, altrimenti interrompe l'esecuzione
      * 
      * @return void 
@@ -237,7 +237,7 @@ class ANNCSUGenericService {
         if(!file_exists($pathToPgService)) {
             throw new Exception('Impossibile recuperare i parametri di connessione a DB, file pg_service.conf mancante');
         }
-        //$serviceConfig = parse_ini_file($pathToPgService,true);
+
         $handleFile = fopen($pathToPgService,'r');
         if(!$handleFile) throw new Exception("Impossibile leggere il file di servizio per la connessione a DB");
         $serviceName = $this->baseServiceName."_".$this->environment;
@@ -351,8 +351,6 @@ class ANNCSUGenericService {
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('content-type: application/x-www-form-urlencoded'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
-        //curl_setopt($ch, CURLOPT_VERBOSE, true);
-        //curl_setopt($ch, CURLOPT_FAILONERROR, true);
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 
         $response = curl_exec($ch);
@@ -396,11 +394,11 @@ class ANNCSUGenericService {
     /**
      * Esegue chiamate in parallelo per il blocco di progressivi specificato
      * 
-     * @param array         $block              blocco di progressivi da processare
-     * @param array         $voucher            voucer pdnd
-     * @param string        $serviceType        tipo di operazione da eseguire, C = coordinate, I = creazione nuovo civico, R = aggiornamento civico esistente, S = cancellazione civico esistente
-     * @param string        $body_constructor   funzione che costruisce la richiesta
-     * @param string        $access_unique_id_field   campo del record accesso che identifica il valore univoco del record
+     * @param array         $block                      blocco di progressivi da processare
+     * @param array         $voucher                    voucer pdnd
+     * @param string        $serviceType                tipo di operazione da eseguire, C = coordinate, I = creazione nuovo civico, R = aggiornamento civico esistente, S = cancellazione civico esistente
+     * @param string        $body_constructor           funzione che costruisce la richiesta
+     * @param string        $access_unique_id_field     campo del record accesso che identifica il valore univoco del record
      * @return array
      */
     public function execMultiPDNDDigestRequest($block, $voucher, $serviceType, $body_contructor, $access_unique_id_field)
@@ -429,19 +427,18 @@ class ANNCSUGenericService {
                 'success' => null,
                 'operation' => $serviceType
             );
+
             $request_body = call_user_func($body_contructor,$access);
-            print_r($request_body);
-            //return array();
+            if(!$request_body) {
+                $this->setAccessProgrResponse($accessObjects[$uniq_id],null, false,"Impossibile definire l'operazione da eseguire sull'accesso");
+                continue;
+            } 
+
             $preparedRequest = $this->getPDNDDigestBody(
                     $request_body, 
                     $token, 
                     $audit_encode, 
                 );
-            if(!$request_body && true) {
-                $this->setAccessProgrResponse($accessObjects[$uniq_id],null, false,"Impossibile definire l'operazione da eseguire sull'accesso");
-                continue;
-            } 
-
 
             $curlHandle = curl_init($this->getServiceUrl($serviceType));
             curl_setopt($curlHandle, CURLOPT_POST, 1);
@@ -450,7 +447,6 @@ class ANNCSUGenericService {
             curl_setopt($curlHandle, CURLOPT_HTTPHEADER, $preparedRequest['headers']);
 
             curl_setopt($curlHandle, CURLOPT_POSTFIELDS, json_encode($preparedRequest['body']));
-            // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
             curl_setopt($curlHandle, CURLINFO_HEADER_OUT, true); 
             curl_setopt($curlHandle, CURLOPT_SHARE, $shareHandle);
@@ -464,10 +460,6 @@ class ANNCSUGenericService {
         // esecuzione multi curl
         do {
             $mrc = curl_multi_exec($multiHandle, $pendingRequests);
-
-            //if (curl_multi_select($multiHandle, 0.1) === -1) {
-              //  usleep(5_000);
-            //}
         } while ($pendingRequests > 0);
         
         // risposte delle varie chiamate
@@ -600,7 +592,7 @@ class ANNCSUGenericService {
     }
 
     public function printProcessParameters(){
-        $this->logInstance->printProcessLog("MODALITA SIMULAZIONE ATTIVA:");
+        $this->logInstance->printProcessLog("MODALITÀ SIMULAZIONE ATTIVA:");
         $this->logInstance->printProcessLog("Ambiente di lancio:........$this->environment",false);
         $this->logInstance->printProcessLog("Servizio:..................$this->serviceType",false);
         $this->logInstance->printProcessLog("Parametri configurazione:".PHP_EOL,false);
@@ -608,7 +600,6 @@ class ANNCSUGenericService {
             $this->logInstance->printProcessLog("$kName:................$kValue",false);
         }
         $this->logInstance->printProcessLog(PHP_EOL,false);
-        //print_r($this->config);
         $this->logInstance->printProcessLog("Connessione db:............$this->serviceName",false);
     }
 }

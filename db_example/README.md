@@ -41,6 +41,28 @@ Per utilizzare questi script è necessario installare:
     |── README.md
 
 ```
+### Specifiche campi tabella civici
+
+| **CAMPO**                      | **DESCRIZIONE**     | **COMPILAZIONE AUTOMATICA** |
+|-----------------------------------|---------------|------------|
+| acc_id | chiave primaria della tabella locale   |     SI     |
+| geom | Coordinate geografiche  |     NO     |
+| acc_a_top_rif | Odonimo completo   |     NO    |
+| acc_numero | Numero civico senza esponente   |     NO     |
+| acc_a_esponente | Esponente in lettera   |     NO     |
+| acc_a_civico_comp | Civico completo (civico+esponente)   |     SI     |
+| acc_a_rif_top_civico | Indirizzo completo (via+civico+esponente)   |     SI     |
+| acc_num_int | Numero civico interno   |     NO     |
+| acc_a_rif_top_civico_int | Indirizzo completo con interno (via+civico+esponente+interno)   |     SI     |
+| acc_a_sez_cens | Sezione censuaria   |     NO     |
+| acc_rif_cat_ty | Tipologia di catasto (Terreni/Fabbricati)   |     NO     |
+| acc_rif_cat_fog | Catasto (foglio)   |     NO     |
+| acc_rif_cat_part | Catasto (particella)   |     NO     |
+| acc_rif_cat_sub | Catasto (subalterno)   |     NO     |
+| progressivo_nazionale | Progressivo Nazionale    |     SI     |
+| progressivo_civico | Progressivo Civico   |     SI     |
+| allineato | Allineamento su ANNCSU   |     SI     |
+| is_civic | Verifica che sia un civico non interno   |     SI     |
 
 ## Installazione
 

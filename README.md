@@ -89,6 +89,10 @@ Per i dettagli sulla struttura e sulla configurazione del file pg_service.conf c
 
 ### Struttura tabellare necessaria per il funzionamento dello script per i servizi di conferimento ed aggiornamento
 
+    > NOTA
+    >
+    > Nella cartella db_example/ sono contenuti file di esempio per la configurazione di un DB con le specifiche necessarie al funzionamento dello script
+
 #### Tabella dei civici e tabelle accessorie ai civici, comuni ad entrambi i servizi
 
 Le tabelle previste sono:

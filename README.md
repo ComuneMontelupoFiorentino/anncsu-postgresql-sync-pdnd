@@ -1,23 +1,3 @@
-/**
- * Script: anncsu-pdnd-api-sync-pg2anncsu
- *
- * Keywords:
- * - anncsu
- * - postgres
- * - postgresql
- * - api
- * - pdnd
- * - conferimento dati
- * - pubblica amministrazione
- *
- * Description:
- * Sincronizzazione e conferimento dati da PostgreSQL verso ANNCSU
- * tramite API PDND, con gestione schedulata.
- *
- * Flow:
- * PostgreSQL -> API PDND -> ANNCSU
- */
-
 # UTILITÀ PER IL CONFERIMENTO COORDINATE E AGGIORNAMENTO CIVICI SU DB ANNCSU
 
 La presente funzionalità è costituita da un insieme di script in linguaggio PHP in grado di gestire le operazioni di conferimento delle coordinate dei civici o l'aggiornamento dei civici stessi su DB ANNCSU. Lo script estrae da DB PostGIS un elenco di record corrispondenti ai civici che si vogliono aggiornare. Le operazioni svolte sono dettagliate in uno specifico file di log generato al termine del processo di conferimento.

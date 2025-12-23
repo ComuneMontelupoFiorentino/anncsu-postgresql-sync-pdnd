@@ -353,3 +353,6 @@ $> php anncsu.php --test -a
 Lo script è in modalità verbosa per default, significa che durante l'esecuzione notifica in console i vari step e passaggi che sta eseguendo. Al termine di ciascuna esecuzione viene poi prodotto un file testuale nella cartella `logs` denominato `{timestamp} {alias}_{ambiente}.log`.
 
 All'interno del file si possono trovare tutti gli output dettagliati sugli accessi che sono stati processati e sull'esito dell'operazione per ciascun record.
+
+### Come attribuire
+A titolo d'esempio, è sufficiente indicare, ove opportuno, "anncsu-postgresql-sync-pdnd Copyright (c) Comune di Montelupo Fiorentino".

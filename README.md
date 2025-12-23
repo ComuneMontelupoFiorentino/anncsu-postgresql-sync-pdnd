@@ -355,4 +355,4 @@ Lo script è in modalità verbosa per default, significa che durante l'esecuzion
 All'interno del file si possono trovare tutti gli output dettagliati sugli accessi che sono stati processati e sull'esito dell'operazione per ciascun record.
 
 ### Come attribuire
-A titolo d'esempio, è sufficiente indicare, ove opportuno, "anncsu-postgresql-sync-pdnd Copyright (c) Comune di Montelupo Fiorentino".
+A titolo d'esempio, è sufficiente indicare, ove opportuno, "anncsu-postgresql-sync-pdnd Copyright © 2025 Comune di Montelupo Fiorentino."

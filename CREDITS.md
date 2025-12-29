@@ -1,6 +1,6 @@
 # Crediti e riconoscimenti
 
-## Commissione
+## Misura 1.3 PNRR
 Questo script è stato commissionato nell'ambito della **Misura 1.3 del PNRR** a [Faunalia](https://www.faunalia.it)
 
 ## Riuso
